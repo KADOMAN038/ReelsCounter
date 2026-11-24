@@ -1,0 +1,11 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:gravity="center" android:padding="12dp"
+    android:background="#20212A">
+    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="BUGÜN İZLENEN REELS" android:textColor="#B8BBC8" android:textSize="10sp" />
+    <TextView android:id="@+id/widget_total" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="0" android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="30sp" />
+    <TextView android:id="@+id/widget_breakdown" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:text="Instagram 0  •  TikTok 0" android:textColor="#D9DAE2" android:textSize="10sp" />
+</LinearLayout>
