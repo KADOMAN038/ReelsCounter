@@ -1,4 +1,4 @@
-name: Build ReelsCounter APK
+name: Build Signed ReelsCounter APK
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
           yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
 
-      - name: Gradle Wrapper kur ve Debug APK derle
+      - name: Gradle Wrapper kur ve APK derle
         run: |
           if [ ! -f "./gradlew" ]; then
             GRADLE_VER="8.10.2"
@@ -37,8 +37,40 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
-      - name: APK dosyasını Artifact olarak yükle
+      - name: Keystore oluştur ve APK imzala
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          BUILD_TOOLS=$(ls "$SDK_ROOT/build-tools" | sort -V | tail -n 1)
+
+          keytool -genkeypair -v \
+            -keystore /tmp/reelscounter.jks \
+            -alias reelscounter \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass 123456 \
+            -keypass 123456 \
+            -dname "CN=ReelsCounter, OU=App, O=Balgibi, L=Bursa, C=TR"
+
+          "$SDK_ROOT/build-tools/$BUILD_TOOLS/zipalign" -v -p 4 \
+            app/build/outputs/apk/debug/app-debug.apk \
+            /tmp/app-aligned.apk
+
+          "$SDK_ROOT/build-tools/$BUILD_TOOLS/apksigner" sign \
+            --ks /tmp/reelscounter.jks \
+            --ks-key-alias reelscounter \
+            --ks-pass pass:123456 \
+            --key-pass pass:123456 \
+            --out /tmp/ReelsCounter-signed.apk \
+            /tmp/app-aligned.apk
+
+          "$SDK_ROOT/build-tools/$BUILD_TOOLS/apksigner" verify /tmp/ReelsCounter-signed.apk
+
+          mkdir -p app/build/outputs/apk/signed
+          cp /tmp/ReelsCounter-signed.apk app/build/outputs/apk/signed/ReelsCounter-signed.apk
+
+      - name: İmzalı APK dosyasını Artifact olarak yükle
         uses: actions/upload-artifact@v4
         with:
-          name: ReelsCounter-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: ReelsCounter-signed-apk
+          path: app/build/outputs/apk/signed/ReelsCounter-signed.apk
