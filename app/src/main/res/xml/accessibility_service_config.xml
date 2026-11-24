@@ -3,4 +3,4 @@
     android:accessibilityFeedbackType="feedbackGeneric"
     android:notificationTimeout="100"
     android:canRetrieveWindowContent="true"
-    android:description="Instagram Reels ve TikTok video akışını algılayıp 3 saniyelik izlemeleri sayar." />
+    android:description="@string/accessibility_desc" />
