@@ -14,18 +14,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: JDK 17 kur
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Android SDK kur
-        uses: android-actions/setup-android@v3
+      - name: Android SDK ortam değişkenlerini ayarla
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
 
-      - name: Gradle wrapper yoksa oluştur ve Debug APK derle
+      - name: Gradle Wrapper kur ve Debug APK derle
         run: |
           if [ ! -f "./gradlew" ]; then
-            gradle wrapper --gradle-version 8.10.2
+            GRADLE_VER="8.10.2"
+            curl -sSL "https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip" -o /tmp/gradle.zip
+            unzip -q /tmp/gradle.zip -d /tmp
+            /tmp/gradle-${GRADLE_VER}/bin/gradle wrapper --gradle-version ${GRADLE_VER}
           fi
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
